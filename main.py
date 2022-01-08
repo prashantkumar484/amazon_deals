@@ -60,10 +60,15 @@ def main():
     dispatcher.add_handler(start_handler)
     # updater.start_polling()
 
+    # updater.start_webhook(listen="0.0.0.0",
+    #                       port=PORT,
+    #                       url_path=TOKEN)
+    # updater.bot.setWebhook('https://amazing-deals-app.herokuapp.com/' + TOKEN)
+
     updater.start_webhook(listen="0.0.0.0",
-                          port=PORT,
-                          url_path=TOKEN)
-    updater.bot.setWebhook('https://amazing-deals-app.herokuapp.com/' + TOKEN)
+                      port=PORT,
+                      url_path=TOKEN,
+                      webhook_url="https://amazing-deals-app.herokuapp.com/" + TOKEN)
 
     updater.idle()
 
