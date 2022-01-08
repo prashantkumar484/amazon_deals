@@ -4,6 +4,9 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO)
 
+import sys
+logging.info("syspath= {}", sys.path)
+
 import os
 from telegram import Update, ParseMode
 from telegram.ext import Updater, CallbackContext, CommandHandler
@@ -52,8 +55,6 @@ def start(update: Update, context: CallbackContext):
 
 
 def main():
-    import sys
-    logging.info("syspath= {}", sys.path)
     updater = Updater(token=TOKEN, use_context=True)
     dispatcher = updater.dispatcher
     start_handler = CommandHandler('start', start)
