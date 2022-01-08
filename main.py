@@ -4,13 +4,10 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO)
 
-import sys
-logging.info("syspath= {}", sys.path)
-
-import os
-from telegram import Update, ParseMode
+from amazon_scraped import AmazonScraped
+from telegram.parsemode import ParseMode
 from telegram.ext import Updater, CallbackContext, CommandHandler
-
+from telegram.update import Update
 from amazon_scraped import AmazonScraped
 
 TOKEN = os.environ.get("TOKEN",'')
