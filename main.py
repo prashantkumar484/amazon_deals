@@ -10,8 +10,8 @@ from telegram.ext import Updater, CallbackContext, CommandHandler
 
 from amazon_scraped import AmazonScraped
 
-TOKEN = os.environ["TOKEN"]
-RESULT_COUNT = os.environ["RESULT_COUNT"]
+TOKEN = os.environ.get("TOKEN",'')
+RESULT_COUNT = int(os.environ.get("RESULT_COUNT", "3"))
 
 def bold(msg):
     return '<b>' + msg + '</b>'
@@ -52,6 +52,8 @@ def start(update: Update, context: CallbackContext):
 
 
 def main():
+    import sys
+    logging.info("syspath= {}", sys.path)
     updater = Updater(token=TOKEN, use_context=True)
     dispatcher = updater.dispatcher
     start_handler = CommandHandler('start', start)
