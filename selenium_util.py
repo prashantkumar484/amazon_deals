@@ -6,7 +6,7 @@ from selenium.webdriver.support.expected_conditions import visibility_of_element
 from selenium.webdriver.support.wait import WebDriverWait
 ### SELENIUM IMPORTS END ###
 
-import time
+import time, os
 
 
 class SeleniumUtil:
