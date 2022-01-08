@@ -10,6 +10,8 @@ from telegram.ext import Updater, CallbackContext, CommandHandler
 from telegram.update import Update
 from amazon_scraped import AmazonScraped
 
+import os
+
 TOKEN = os.environ.get("TOKEN",'')
 RESULT_COUNT = int(os.environ.get("RESULT_COUNT", "3"))
 
