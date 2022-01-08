@@ -21,7 +21,7 @@ class SeleniumUtil:
         option.add_argument('--no-sandbox')
         option.add_argument('--disable-dev-sh-usage')
 
-        options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
+        option.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
 
         # Custom header for language
         option.add_argument('accept-language=en-US')
