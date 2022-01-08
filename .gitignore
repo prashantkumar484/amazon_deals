@@ -1,3 +1,6 @@
-__pycache__
 .bin
+.env
+Procfile.windows
+
+__pycache__
 selenium/

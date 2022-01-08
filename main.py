@@ -38,6 +38,8 @@ def start(update: Update, context: CallbackContext):
     asd = AmazonScraped()
     deals = asd.get_lightning_deals(RESULT_COUNT)
 
+    logging.info("Sending deals data to telegram START")
+
     for deal in deals:
         offer_title = bold('GET ' + deal['off_percent'] + ' OFF')
         title = bold(deal['title'])
@@ -54,6 +56,7 @@ def start(update: Update, context: CallbackContext):
         # logging.info(msg)
         context.bot.send_message(chat_id=update.effective_chat.id, text=msg, parse_mode = ParseMode.HTML)
 
+    logging.info("Sending deals data to telegram END")
 
 
 def main():
