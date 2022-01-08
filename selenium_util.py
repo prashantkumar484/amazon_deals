@@ -26,7 +26,7 @@ class SeleniumUtil:
         # Custom header for language
         option.add_argument('accept-language=en-US')
 
-        executable_path = os.environ.get("CHROMEDRIVER_PATH")
+        executable_path = os.environ.get("CHROMEDRIVER_PATH", './mdriver/chromedriver')
 
         service = Service(executable_path=executable_path)
         driver = webdriver.Chrome(service=service, options=option)

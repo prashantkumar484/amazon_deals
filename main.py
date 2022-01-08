@@ -1,3 +1,7 @@
+from dotenv import load_dotenv
+load_dotenv()
+
+import os
 import logging
 logging.basicConfig(
     # filename='out.txt',
@@ -8,12 +12,11 @@ from amazon_scraped import AmazonScraped
 from telegram.parsemode import ParseMode
 from telegram.ext import Updater, CallbackContext, CommandHandler
 from telegram.update import Update
-from amazon_scraped import AmazonScraped
 
-import os
 PORT = os.environ.get("PORT",'80')
 TOKEN = os.environ.get("TOKEN",'')
 RESULT_COUNT = int(os.environ.get("RESULT_COUNT", "3"))
+WEBHOOK_URL = os.environ.get("WEBHOOK_URL","https://amazing-deals-app.herokuapp.com/")
 
 def bold(msg):
     return '<b>' + msg + '</b>'
@@ -58,17 +61,15 @@ def main():
     dispatcher = updater.dispatcher
     start_handler = CommandHandler('start', start)
     dispatcher.add_handler(start_handler)
+    ## Uncomment For local env
     # updater.start_polling()
-
-    # updater.start_webhook(listen="0.0.0.0",
-    #                       port=PORT,
-    #                       url_path=TOKEN)
-    # updater.bot.setWebhook('https://amazing-deals-app.herokuapp.com/' + TOKEN)
 
     updater.start_webhook(listen="0.0.0.0",
                       port=PORT,
                       url_path=TOKEN,
-                      webhook_url="https://amazing-deals-app.herokuapp.com/" + TOKEN)
+                      webhook_url=WEBHOOK_URL + TOKEN)
+
+    logging.info("Webhook started")
 
     updater.idle()
 
