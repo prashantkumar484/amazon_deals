@@ -11,7 +11,7 @@ from telegram.update import Update
 from amazon_scraped import AmazonScraped
 
 import os
-
+PORT = os.environ.get("PORT",'80')
 TOKEN = os.environ.get("TOKEN",'')
 RESULT_COUNT = int(os.environ.get("RESULT_COUNT", "3"))
 
@@ -61,7 +61,7 @@ def main():
     # updater.start_polling()
 
     updater.start_webhook(listen="0.0.0.0",
-                          port=5000,
+                          port=PORT,
                           url_path=TOKEN)
     updater.bot.setWebhook('https://amazing-deals-app.herokuapp.com/' + TOKEN)
 
