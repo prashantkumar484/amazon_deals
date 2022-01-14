@@ -1,7 +1,6 @@
 from dotenv import load_dotenv
 load_dotenv()
 
-import os
 import logging
 logging.basicConfig(
     # filename='out.txt',
@@ -9,10 +8,15 @@ logging.basicConfig(
     level=logging.INFO)
 log = logging.getLogger()
 
+import os
+import schedule
+import datetime, time
+
 from telegram import ParseMode, Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, CallbackContext, CommandHandler, CallbackQueryHandler
 
 from amazon_scraped import AmazonScraped
+from dbhelper import DBHelper
 from models import *
 
 PORT = os.environ.get("PORT",'80')
@@ -22,6 +26,7 @@ WEBHOOK_URL = os.environ.get("WEBHOOK_URL","https://amazing-deals-app.herokuapp.
 
 DEPLOY_ENV = os.environ.get("DEPLOY_ENV",'local')
 
+dbhelper = DBHelper()
 
 # start_items = [Item(1, "Top 5 Offers"), Item(2, "Custom (Max 30 results)")]
 start_items = [Item(1, "Top 5 Offers")]
@@ -94,22 +99,21 @@ def process(update: Update, context: CallbackContext):
 
     # context.bot.send_message(chat_id, text)
 
-    asd = AmazonScraped()
-    deals = asd.get_lightning_deals(RESULT_COUNT)
+    deals = dbhelper.get_deals_data()
 
     log.info("Sending deals data to telegram START")
 
     for deal in deals:
-        offer_title = bold('GET ' + deal['off_percent'] + ' OFF')
-        title = bold(deal['title'])
-        deal_price = 'Deal Price= ' + deal['deal_price']
-        mrp = 'MRP= ' + deal['mrp']
-        off_percent = bold('Off Percent= ' + deal['off_percent'])
-        rating = deal['rating']
-        claim_percent = deal['claim_percent'] + '% claimed'
-        time_end = bold(deal['time_end']) + ' after message is posted'
-        
-        url = add_associate_id(deal['url'])
+        offer_title = bold('GET ' + deal.off_percent + ' OFF')
+        title = bold(deal.title)
+        deal_price = 'Deal Price= ' + deal.deal_price
+        mrp = 'MRP= ' + deal.mrp
+        off_percent = bold('Off Percent= ' + deal.off_percent)
+        rating = deal.rating
+        claim_percent = deal.claim_percent + '% claimed'
+        time_end = bold(deal.time_end) + ' after message is posted'
+        url = add_associate_id(deal.url)
+        last_update = deal.updated
         
         msg = offer_title + "\n\n" + title + "\n" + deal_price + "\n" + mrp + "\n" + off_percent + "\n" + rating + "\n" + claim_percent + "\n" + time_end + "\n\nBUY NOW:\n" + url
         # log.info(msg)
@@ -117,13 +121,41 @@ def process(update: Update, context: CallbackContext):
 
     log.info("Sending deals data to telegram END")
 
+def scheduled_job():
+    log.info(f"Running schedular {datetime.datetime.now()}")
+
+    asd = AmazonScraped()
+    deals = asd.get_lightning_deals(50)
+
+    log.info("Sending deals data to DB START")
+
+    dbhelper.delete_deals_table()
+    dbhelper.create_deals_table()
+
+    for deal in deals:
+
+        deal_obj = Deal()
+        deal_obj.set_deal_data(deal)
+        deal_id = dbhelper.insert_deals_data(deal_obj)
+    log.info("Sending deals data to DB END")
+
+def start_schedular():
+    schedule.every(3).minutes.do(scheduled_job)
+    log.info("Deals Schedular started")
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
 
 def main():
-    updater = Updater(token=TOKEN, use_context=True)
+    updater = Updater(token=TOKEN, use_context=True, request_kwargs={'read_timeout': 60, 'connect_timeout': 60})
     dispatcher = updater.dispatcher
+
     start_handler = CommandHandler('start', start)
     dispatcher.add_handler(start_handler)
-    updater.dispatcher.add_handler(CallbackQueryHandler(button))
+    
+    dispatcher.add_handler(CallbackQueryHandler(button))
+
+    dispatcher.run_async(start_schedular)
 
     ## Uncomment For local env
     updater_started = True
@@ -140,8 +172,10 @@ def main():
     if updater_started:
         log.info("Webhook started")
         updater.idle()
+
     else:
         log.error("Webhook start Failed")
 
 if __name__ == '__main__':
+
     main()
