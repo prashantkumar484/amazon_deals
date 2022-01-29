@@ -29,7 +29,7 @@ DEPLOY_ENV = os.environ.get("DEPLOY_ENV",'local')
 dbhelper = DBHelper()
 
 # start_items = [Item(1, "Top 5 Offers"), Item(2, "Custom (Max 30 results)")]
-start_items = [Item(1, "Top 5 Offers")]
+start_items = [Item(1, "Top 10 Offers")]
 user_result_count = 0
 
 def bold(msg):
@@ -99,7 +99,7 @@ def process(update: Update, context: CallbackContext):
 
     # context.bot.send_message(chat_id, text)
 
-    deals = dbhelper.get_deals_data()
+    deals = dbhelper.get_deals_data(10)
 
     log.info("Sending deals data to telegram START")
 
