@@ -187,7 +187,14 @@ class AmazonLightningDeals:
         params = {
             'ie': 'UTF8',
             'ref_': 'topnav_storetab_gb',
-            'deals-widget': {"version":1,"viewIndex":view_index,"presetId":"deals-collection-lightning-deals","dealType":"LIGHTNING_DEAL","sorting":"BY_DISCOUNT_DESCENDING"}
+            'deals-widget': {
+                "version":1,
+                "viewIndex":view_index,
+                "presetId":"deals-collection-lightning-deals",
+                "dealType":"LIGHTNING_DEAL",
+                "sorting":"BY_DISCOUNT_DESCENDING",
+                "starRating":3
+            }
         }
 
         return params
