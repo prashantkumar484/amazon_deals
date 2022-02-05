@@ -148,7 +148,7 @@ def scheduled_job():
     log.info("Sending deals data to DB END")
 
 def start_schedular():
-    schedule.every(1).minutes.do(scheduled_job)
+    schedule.every(3).minutes.do(scheduled_job)
     log.info("Deals Schedular started")
     while True:
         schedule.run_pending()
