@@ -141,7 +141,6 @@ def scheduled_job():
     dbhelper.create_deals_table()
 
     for deal in deals:
-
         deal_obj = Deal()
         deal_obj.set_deal_data(deal)
         deal_id = dbhelper.insert_deals_data(deal_obj)
