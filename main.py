@@ -11,6 +11,7 @@ log = logging.getLogger()
 import os
 import schedule
 import datetime, time
+import requests
 
 from telegram import ParseMode, Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, CallbackContext, CommandHandler, CallbackQueryHandler
@@ -121,8 +122,15 @@ def process(update: Update, context: CallbackContext):
 
     log.info("Sending deals data to telegram END")
 
+def keep_awake():
+    keep_awake_url = 'https://amazing-deals-app.herokuapp.com/5003347905:AAE_D1kkfZq3NfNoOb1nQzLdaUe7MX1TFmw'
+    res = requests.post(keep_awake_url)
+    log.info(f'keep_awake_status= {res.status_code}')
+
 def scheduled_job():
     log.info(f"Running schedular {datetime.datetime.now()}")
+
+    keep_awake()
 
     asd = AmazonScraped()
     deals = asd.get_lightning_deals(50)
@@ -140,7 +148,7 @@ def scheduled_job():
     log.info("Sending deals data to DB END")
 
 def start_schedular():
-    schedule.every(3).minutes.do(scheduled_job)
+    schedule.every(1).minutes.do(scheduled_job)
     log.info("Deals Schedular started")
     while True:
         schedule.run_pending()
