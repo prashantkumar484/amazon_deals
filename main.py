@@ -22,6 +22,8 @@ from models import *
 
 PORT = os.environ.get("PORT",'80')
 TOKEN = os.environ.get("TOKEN",'')
+
+MAX_ITEMS = int(os.environ.get("MAX_ITEMS", "200"))
 RESULT_COUNT = int(os.environ.get("RESULT_COUNT", "5"))
 WEBHOOK_URL = os.environ.get("WEBHOOK_URL","https://amazing-deals-app.herokuapp.com/")
 
@@ -113,7 +115,7 @@ def button(update: Update, context: CallbackContext) -> None:
         elif selected_option=='next':
             search_history = dbhelper.get_search_history(chat_id)
             curr_offset = search_history[0][1]
-            curr_offset = min(curr_offset+RESULT_COUNT, 100-RESULT_COUNT)
+            curr_offset = min(curr_offset+RESULT_COUNT, MAX_ITEMS-RESULT_COUNT)
         elif selected_option=='top':
             curr_offset=0
         else:
@@ -185,7 +187,7 @@ def scheduled_job():
     keep_awake()
 
     asd = AmazonScraped()
-    deals = asd.get_lightning_deals(120)
+    deals = asd.get_lightning_deals(MAX_ITEMS)
 
     log.info("Sending deals data to DB START")
 
