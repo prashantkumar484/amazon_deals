@@ -31,7 +31,7 @@ dbhelper = DBHelper()
 
 # start_items = [Item(1, "Top 5 Offers"), Item(2, "Custom (Max 30 results)")]
 start_items = [Item("top", "Top Offers")]
-next_items = [Item("top", "Top Offers"),Item("prev", "Previous Offers"), Item("next", "Next Offers"), Item("exit", "exit")]
+next_items = [Item("top", "Top Offers"),Item("prev", "Previous Offers"), Item("next", "Next Offers"), Item("cancel", "Cancel")]
 user_result_count = 0
 
 def bold(msg):
@@ -58,13 +58,22 @@ def get_chat_id(update, context):
 
     return chat_id
 
+def build_menu(buttons, n_cols, header_buttons=None, footer_buttons=None):
+    menu = [buttons[i:i + n_cols] for i in range(0, len(buttons), n_cols)]
+    if header_buttons:
+        menu.insert(0, [header_buttons])
+    if footer_buttons:
+        menu.append([footer_buttons])
+    return menu
+
 def add_suggested_actions(update, context, response):
     options = []
 
     for item in response.items:
         options.append(InlineKeyboardButton(item.message, callback_data=item.id))
 
-    reply_markup = InlineKeyboardMarkup([options])
+    # reply_markup = InlineKeyboardMarkup([options])
+    reply_markup = InlineKeyboardMarkup(build_menu(options, n_cols=2))
 
     # update.message.reply_text(response.message, reply_markup=reply_markup)
     context.bot.send_message(chat_id=get_chat_id(update, context), text=response.message, reply_markup=reply_markup)
