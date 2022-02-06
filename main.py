@@ -22,7 +22,7 @@ from models import *
 
 PORT = os.environ.get("PORT",'80')
 TOKEN = os.environ.get("TOKEN",'')
-RESULT_COUNT = int(os.environ.get("RESULT_COUNT", "3"))
+RESULT_COUNT = int(os.environ.get("RESULT_COUNT", "5"))
 WEBHOOK_URL = os.environ.get("WEBHOOK_URL","https://amazing-deals-app.herokuapp.com/")
 
 DEPLOY_ENV = os.environ.get("DEPLOY_ENV",'local')
@@ -30,7 +30,8 @@ DEPLOY_ENV = os.environ.get("DEPLOY_ENV",'local')
 dbhelper = DBHelper()
 
 # start_items = [Item(1, "Top 5 Offers"), Item(2, "Custom (Max 30 results)")]
-start_items = [Item(1, "Top 10 Offers")]
+start_items = [Item("top", "Top Offers")]
+next_items = [Item("top", "Top Offers"),Item("prev", "Previous Offers"), Item("next", "Next Offers"), Item("exit", "exit")]
 user_result_count = 0
 
 def bold(msg):
@@ -71,27 +72,60 @@ def add_suggested_actions(update, context, response):
 def button(update: Update, context: CallbackContext) -> None:
     """Parses the CallbackQuery and updates the message text."""
     query = update.callback_query
+    chat_id = get_chat_id(update, context)
+
+    log.info("Button CLicked.. Getting Data")
 
     # CallbackQueries need to be answered, even if no notification to the user is needed
     # Some clients may have trouble otherwise. See https://core.telegram.org/bots/api#callbackquery
     query.answer()
 
-    selected_option = int(query.data)
+    selected_option = query.data
 
     selected_option_msg = "Invalid message"
+    selected_item = [x for x in start_items if x.id==selected_option]
+    if len(selected_item)>0:
+        selected_item = selected_item[0]
+        selected_option_msg = selected_item.message
+        query.edit_message_text(text=f"Selected option: {selected_option_msg}")
+        process(update, context)
+        return
+    
+    selected_item = [x for x in next_items if x.id==selected_option]
+    if len(selected_item)>0:
+        selected_item = selected_item[0]
+        selected_option_msg = selected_item.message
+        query.edit_message_text(text=f"Selected option: {selected_option_msg}")
+        curr_offset = 0
+        if selected_option=='prev':
+            search_history = dbhelper.get_search_history(chat_id)
+            curr_offset = search_history[0][1]
+            curr_offset = max(curr_offset-RESULT_COUNT, 0)
+        elif selected_option=='next':
+            search_history = dbhelper.get_search_history(chat_id)
+            curr_offset = search_history[0][1]
+            curr_offset = min(curr_offset+RESULT_COUNT, 100-RESULT_COUNT)
+        elif selected_option=='top':
+            curr_offset=0
+        else:
+            return
+        dbhelper.insert_or_update_search_history(chat_id, curr_offset)
+        process(update, context)
+        return
+    
+    
 
-    for item in start_items:
-        if item.id == selected_option:
-            selected_option_msg = item.message
-            break
-
-    query.edit_message_text(text=f"Selected option: {selected_option_msg}")
-    log.info("Button CLicked.. Getting Data")
-
-    process(update, context)
+def next_prev_handler(update: Update, context: CallbackContext):
+    log.info(f'next_prev_handler start')
+    buttons = MultiItems("How would you like to search?", next_items)
+    add_suggested_actions(update, context, buttons)
 
 def start(update: Update, context: CallbackContext):
     log.info("start START")
+    chat_id = get_chat_id(update, context)
+    
+    dbhelper.insert_or_update_search_history(chat_id, 0)
+
     buttons = MultiItems("How would you like to search?", start_items)
     add_suggested_actions(update, context, buttons)
 
@@ -100,7 +134,13 @@ def process(update: Update, context: CallbackContext):
 
     # context.bot.send_message(chat_id, text)
 
-    deals = dbhelper.get_deals_data(10)
+    chat_id = get_chat_id(update,context)
+    log.info(f'chat_id= {chat_id}')
+
+    search_history = dbhelper.get_search_history(chat_id)
+    offset = search_history[0][1]
+
+    deals = dbhelper.get_deals_data(RESULT_COUNT, offset)
 
     log.info("Sending deals data to telegram START")
 
@@ -118,9 +158,12 @@ def process(update: Update, context: CallbackContext):
         
         msg = offer_title + "\n\n" + title + "\n" + deal_price + "\n" + mrp + "\n" + off_percent + "\n" + rating + "\n" + claim_percent + "\n" + time_end + "\n\nBUY NOW:\n" + url
         # log.info(msg)
-        context.bot.send_message(chat_id=update.effective_chat.id, text=msg, parse_mode = ParseMode.HTML)
 
+        context.bot.send_message(chat_id=chat_id, text=msg, parse_mode = ParseMode.HTML)
+    # dbhelper.insert_or_update_search_history(chat_id, offset + RESULT_COUNT)
     log.info("Sending deals data to telegram END")
+
+    next_prev_handler(update,context)
 
 def keep_awake():
     keep_awake_url = 'https://amazing-deals-app.herokuapp.com/5003347905:AAE_D1kkfZq3NfNoOb1nQzLdaUe7MX1TFmw'
@@ -133,7 +176,7 @@ def scheduled_job():
     keep_awake()
 
     asd = AmazonScraped()
-    deals = asd.get_lightning_deals(50)
+    deals = asd.get_lightning_deals(120)
 
     log.info("Sending deals data to DB START")
 
@@ -184,5 +227,5 @@ def main():
         log.error("Webhook start Failed")
 
 if __name__ == '__main__':
-
+    dbhelper.create_search_history_table()
     main()

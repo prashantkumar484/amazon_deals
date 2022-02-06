@@ -44,6 +44,42 @@ class DBHelper:
         self.conn.execute(sql)
         self.conn.commit()
     
+    def create_search_history_table(self):
+        sql = '''CREATE TABLE IF NOT EXISTS search_history (
+                chat_id text PRIMARY KEY,
+                offset integer,
+                updated DATETIME DEFAULT CURRENT_TIMESTAMP
+                );'''
+        self.conn.execute(sql)
+        self.conn.commit()
+    
+    def get_search_history(self, chat_id,):
+
+        sql = "SELECT * FROM search_history WHERE chat_id='"+ str(chat_id) +"';"
+        cur = self.conn.execute(sql)
+
+        rows = cur.fetchall()
+        print(f'Count of chat_id results= {len(rows)}')
+        return rows
+    
+    def insert_or_update_search_history(self, chat_id,offset):
+
+        history = self.get_search_history(chat_id)
+
+        n_history = len(history)
+        print(f'insert_or_update_search_history::Count of chat_id results= {n_history}')
+
+        if n_history>0:
+            sql = "UPDATE search_history SET offset=" + str(offset) + " WHERE chat_id='"+ str(chat_id) +"';"
+            cur = self.conn.execute(sql)
+        else:
+            sql = 'INSERT INTO search_history(chat_id,offset) VALUES(?,?)'
+            data = (chat_id, offset)
+            cur = self.conn.execute(sql, data)
+        self.conn.commit()
+
+        return cur.lastrowid
+    
     def delete_test_table(self):
         sql = '''DROP table IF EXISTS test;'''
 
@@ -83,9 +119,9 @@ class DBHelper:
         except:
             return -1
 
-    def get_deals_data(self, limit=5):
+    def get_deals_data(self, limit=5, offset=0):
         # sql = '''SELECT * FROM deals LIMIT 5;'''
-        sql = 'SELECT * FROM deals order by review_count desc LIMIT '+str(limit) +';'
+        sql = 'SELECT * FROM deals order by review_count desc LIMIT '+str(limit) +' OFFSET '+ str(offset) +';'
 
         cur = self.conn.execute(sql)
 

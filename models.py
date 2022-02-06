@@ -35,7 +35,7 @@ class Deal:
 
 class Item:
     def __init__(self):
-        self.id = -1
+        self.id = -""
         self.message = ""
     def __init__(self, id, message):
         self.id = id
