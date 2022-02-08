@@ -10,6 +10,7 @@ from urllib.parse import urlencode
 from bs4 import BeautifulSoup
 import json
 import time
+import gc
 import logging as logger
 
 logger.basicConfig(
@@ -44,6 +45,9 @@ class AmazonLightningDeals:
         deals = []
         count = 1
         while count > 0:
+            print(f'gc_count_before= {gc.get_count()}')
+            print(f'gc_collected= {gc.collect()}')
+            print(f'gc_count_after= {gc.get_count()}')
             logger.info(f'Trying for index= {self.curr_view_index}')
             if self.curr_view_index%100 ==0:
                 driver.close()
@@ -65,7 +69,9 @@ class AmazonLightningDeals:
             # if(count>0):
             #     break
             # logger.info(count)
-
+            print(f'gc_count_before= {gc.get_count()}')
+            print(f'gc_collected= {gc.collect()}')
+            print(f'gc_count_after= {gc.get_count()}')
             if len(deals) > self.max_deals_count:
                 break
         # logger.info(deals[-3:-1])
@@ -74,6 +80,9 @@ class AmazonLightningDeals:
         logger.debug(f'Deals:\n {deals}')
 
         driver.close()
+        print(f'gc_count_before= {gc.get_count()}')
+        print(f'gc_collected= {gc.collect()}')
+        print(f'gc_count_after= {gc.get_count()}')
 
         return deals
 
@@ -92,6 +101,9 @@ class AmazonLightningDeals:
         result = []
 
         for el in elements:
+            # print(f'gc_count_before= {gc.get_count()}')
+            # print(f'gc_collected= {gc.collect()}')
+            # print(f'gc_count_after= {gc.get_count()}')
             try:
                 deal_info = {}
 
@@ -169,6 +181,10 @@ class AmazonLightningDeals:
             elements = driver.find_elements(self.selector_type ,self.selector_field)
             count = len(elements)
             logger.info(f'found count= {count}')
+
+            print(f'gc_count_before= {gc.get_count()}')
+            print(f'gc_collected= {gc.collect()}')
+            print(f'gc_count_after= {gc.get_count()}')
         
         logger.info(f'Total Elements found = {count}')
 

@@ -1,4 +1,5 @@
 import re
+import gc
 from amazon_lightning_deals import AmazonLightningDeals
 
 class AmazonScraped:
@@ -6,6 +7,10 @@ class AmazonScraped:
         pass
 
     def get_lightning_deals(self, max_deals_count = 10):
+
+        print(f'gc_count_before= {gc.get_count()}')
+        print(f'gc_collected= {gc.collect()}')
+        print(f'gc_count_after= {gc.get_count()}')
         ald = AmazonLightningDeals()
         ald.set_max_deals_count(max_deals_count)
 
@@ -16,7 +21,10 @@ class AmazonScraped:
         for deal in results:
             parsed_deal = self.parse_deal(deal)
             parsed_results.append(parsed_deal)
-
+        
+        print(f'gc_count_before= {gc.get_count()}')
+        print(f'gc_collected= {gc.collect()}')
+        print(f'gc_count_after= {gc.get_count()}')
 
         return parsed_results[:max_deals_count]
     
