@@ -53,6 +53,7 @@ class AmazonLightningDeals:
                 driver.close()
                 time.sleep(5)
                 logger.info(f'Creating new driver.. index= {self.curr_view_index}')
+                del driver
                 driver = selenium_util.get_new_driver_obj()
             else:
                 time.sleep(2)
@@ -77,9 +78,10 @@ class AmazonLightningDeals:
         # logger.info(deals[-3:-1])
         logger.info(f'Total deals count= {len(deals)}')
 
-        logger.debug(f'Deals:\n {deals}')
+        # logger.debug(f'Deals:\n {deals}')
 
         driver.close()
+        del driver
         print(f'gc_count_before= {gc.get_count()}')
         print(f'gc_collected= {gc.collect()}')
         print(f'gc_count_after= {gc.get_count()}')
@@ -174,13 +176,19 @@ class AmazonLightningDeals:
             el = driver.find_elements(self.selector_type ,"[data-testid='no-deals-message']")
             if len(el)>0:
                 no_deals = True
+                del el
                 return []
             
+            del el
+
             logger.info("count < total_child_elements .... Trying.....")
             time.sleep(3)
             elements = driver.find_elements(self.selector_type ,self.selector_field)
             count = len(elements)
             logger.info(f'found count= {count}')
+
+            if count < total_child_elements:
+                del elements
 
             print(f'gc_count_before= {gc.get_count()}')
             print(f'gc_collected= {gc.collect()}')
@@ -192,6 +200,7 @@ class AmazonLightningDeals:
 
         ### Getting deal data
         data = self.get_deal_info(elements)
+        del elements
 
         # update index for next page
         self.curr_view_index += count
