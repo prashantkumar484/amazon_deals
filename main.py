@@ -177,7 +177,7 @@ def process(update: Update, context: CallbackContext):
     next_prev_handler(update,context)
 
 def keep_awake():
-    keep_awake_url = 'https://amazing-deals-app.herokuapp.com/5003347905:AAE_D1kkfZq3NfNoOb1nQzLdaUe7MX1TFmw'
+    keep_awake_url = 'https://amazing-deals-app.herokuapp.com'
     res = requests.post(keep_awake_url)
     log.info(f'keep_awake_status= {res.status_code}')
 
